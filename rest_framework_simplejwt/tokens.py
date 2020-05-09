@@ -153,7 +153,9 @@ class Token:
             raise TokenError(format_lazy(_("Token '{}' claim has expired"), claim))
 
     @classmethod
-    def for_user(cls, user):
+    def for_user(cls, user, refresh_token_lifetime=None):
+        if refresh_token_lifetime:
+            cls.lifetime = refresh_token_lifetime
         """
         Returns an authorization token for the given user that will be provided
         after authenticating the user's credentials.
@@ -250,6 +252,7 @@ class SlidingToken(BlacklistMixin, Token):
 class RefreshToken(BlacklistMixin, Token):
     token_type = 'refresh'
     lifetime = api_settings.REFRESH_TOKEN_LIFETIME
+    access_token_lifetime = None
     no_copy_claims = (
         api_settings.TOKEN_TYPE_CLAIM,
         'exp',
@@ -270,6 +273,8 @@ class RefreshToken(BlacklistMixin, Token):
         those claims listed in the `no_copy_claims` attribute.
         """
         access = AccessToken()
+        if (self.access_token_lifetime):
+            access.lifetime = self.access_token_lifetime
 
         # Use instantiation time of refresh token as relative timestamp for
         # access token "exp" claim.  This ensures that both a refresh and
