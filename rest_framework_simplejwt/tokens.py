@@ -155,7 +155,7 @@ class Token:
     @classmethod
     def for_user(cls, user, refresh_token_lifetime=None):
         if refresh_token_lifetime:
-            cls.lifetime = refresh_token_lifetime
+            cls.lifetime = min(refresh_token_lifetime, cls.lifetime)
         """
         Returns an authorization token for the given user that will be provided
         after authenticating the user's credentials.
@@ -274,7 +274,7 @@ class RefreshToken(BlacklistMixin, Token):
         """
         access = AccessToken()
         if (self.access_token_lifetime):
-            access.lifetime = self.access_token_lifetime
+            access.lifetime = min(self.access_token_lifetime, access.lifetime)
 
         # Use instantiation time of refresh token as relative timestamp for
         # access token "exp" claim.  This ensures that both a refresh and
